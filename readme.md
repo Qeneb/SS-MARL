@@ -66,14 +66,14 @@ To fine-tune or test a model, users can save their model files in the `ssmarl/mo
 ## Demo
 This demo shows the strong scalability of SS-MARL. Despite being trained with only 3 agents, the models are capable of more complex, randomly generated scenarios, even scaling up to a challenge involving 96 agents.  
 
-![3 agents](https://github.com/qeneb/SS-MARL/demo/3agents.gif)  
+![3 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/3agents.gif)  
 
-![6 agents](https://github.com/qeneb/SS-MARL/demo/6agents.gif)  
+![6 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/6agents.gif)  
 
-![12 agents](https://github.com/qeneb/SS-MARL/demo/12agents.gif)  
+![12 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/12agents.gif)  
 
-![24 agents](https://github.com/qeneb/SS-MARL/demo/24agents.gif)  
+![24 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/24agents.gif)  
 
-![48 agents](https://github.com/qeneb/SS-MARL/demo/48agents.gif)  
+![48 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/48agents.gif)  
 
-![96 agents](https://github.com/qeneb/SS-MARL/demo/96agents.gif)  
+![96 agents](https://github.com/Qeneb/SS-MARL/blob/main/demo/96agents.gif)  
