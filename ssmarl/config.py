@@ -144,7 +144,7 @@ def get_config():
                         help="the number of episodes to render a given env")
     parser.add_argument("--ifi", type=float, default=0.1,
                         help="the play interval of each rendered image in saved video.")
-    parser.add_argument("--model_dir", type=str, default="C:/Users/txzjh/Desktop/SSMARL/ssmarl/model",
+    parser.add_argument("--model_dir", type=str, default="xxx",
                         help="by default None. set the path to pretrained model.")
 
     return parser
