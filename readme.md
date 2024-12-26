@@ -70,15 +70,15 @@ This demo shows the strong scalability of SS-MARL. Despite being trained with on
 
 ### Zero-shot transfer to cooperative navigation with 6, 12, 24, 48, 96 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
 
 ### Zero-shot transfer to cooperative formation with 3, 6, 12 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
 
 ### Zero-shot transfer to cooperative line with 3, 6, 12 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/line/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
 
 ## Demo 2
 This demo shows that SS-MARL can also handle other cooperative tasks. We retrain SS-MARL on cooperative formation and cooperative line tasks. Here is the introduction of two cooperative tasks.
@@ -87,10 +87,10 @@ This demo shows that SS-MARL can also handle other cooperative tasks. We retrain
 
 ### Train on cooperative formation with 3, 4, 5, 6 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
 
 ### Train on cooperative line with 3, 4, 5, 6 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
 
 
