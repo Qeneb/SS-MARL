@@ -66,12 +66,12 @@ To fine-tune or test a model, users can save their model files in the `ssmarl/mo
 ## Demo 1
 This demo shows the strong scalability of SS-MARL. Despite being trained with only 3 agents, the models are capable of more complex, randomly generated scenarios, even scaling up to a challenge involving 96 agents.  
 ### Train on cooperative navigation with 3 agents
-
 <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  
 
 ### Zero-shot transfer to cooperative navigation with 6, 12, 24, 48, 96 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
 
 ### Zero-shot transfer to cooperative formation with 3, 6, 12 agents
 
