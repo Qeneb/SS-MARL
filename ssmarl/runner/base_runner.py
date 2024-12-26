@@ -109,6 +109,7 @@ class Runner(object):
                                         self.envs.graph_obs_shape,
                                         self.envs.share_graph_obs_shape,
                                         self.envs.action_space[agent_id])
+            # TODO: Shared buffer
             self.buffer.append(bu)
             self.trainer.append(tr)
 
