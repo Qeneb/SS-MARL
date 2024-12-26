@@ -67,7 +67,7 @@ To fine-tune or test a model, users can save their model files in the `ssmarl/mo
 This demo shows the strong scalability of SS-MARL. Despite being trained with only 3 agents, the models are capable of more complex, randomly generated scenarios, even scaling up to a challenge involving 96 agents.  
 ### Train on cooperative navigation with 3 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  
+![3 agents](https://github.com/Qeneb/SS-MARL/demo/navigation/3agents.gif "3 agents")
 
 ### Zero-shot transfer to cooperative navigation with 6, 12, 24, 48, 96 agents
 
