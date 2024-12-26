@@ -37,7 +37,7 @@ Consider cost constraints.
 Suitable for SS-MARL.
 
 ### Scenario
-Users can use the collaborative navigation (CN) scenario described in the paper or create and use custom scenarios. The scenario files should be placed in the `ssmarl/envs/mpe_env/multiagent/scenarios` directory.
+Users can use the cooperative navigation scenario described in the paper or create and use custom scenarios. The scenario files should be placed in the `ssmarl/envs/mpe_env/multiagent/scenarios` directory.
 
 ### Parameter
 All parameters and their detailed functions are described in the `ssmarl/config.py` file. Users can modify the default values for different training or testing tasks as needed.
@@ -63,12 +63,35 @@ Setting `use_render` to `True` will enable rendering of the environment in a sep
 
 To fine-tune or test a model, users can save their model files in the `ssmarl/model` directory, where they will be automatically restored. Additionally, pre-trained SS-MARL(PS) model files are already available in the same directory for immediate use.
 
-## Demo
+## Demo 1
 This demo shows the strong scalability of SS-MARL. Despite being trained with only 3 agents, the models are capable of more complex, randomly generated scenarios, even scaling up to a challenge involving 96 agents.  
-### Scale up to 3, 6, 12 agents
+### Train on cooperative navigation with 3 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  
-### Scale up to 24, 48, 96 agents
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
+### Zero-shot transfer to cooperative navigation with 6, 12, 24, 48, 96 agents
+
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
+
+### Zero-shot transfer to cooperative formation with 3, 6, 12 agents
+
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+
+### Zero-shot transfer to cooperative line with 3, 6, 12 agents
+
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+
+## Demo 2
+This demo shows that SS-MARL can also handle other cooperative tasks. We retrain SS-MARL on cooperative formation and cooperative line tasks. Here is the introduction of two cooperative tasks.
+* In the Formation task, a scenario is set where $N$ agents are required to arrange themselves around a single landmark, which is positioned at the center of an $N$-sided regular polygon. The agents receive rewards at each time step based on their proximity to their designated positions. Additionally, they incur costs for colliding with one another. These positions are determined by solving a linear assignment problem at each time step, which takes into account the number of agents present in the environment and the desired radius of the polygon. For our experiments, we have set the target radius to a value of 0.5.
+* In the Line task, a setup is presented involving $N$ agents and a pair of landmarks. The objective for the agents is to disperse themselves evenly along a straight line that stretches between the two landmarks. As with the Formation environment, the agents earn rewards based on their nearness to the positions they are supposed to occupy. These positions are determined through the resolution of a linear sum assignment problem at every time step.
+
+### Train on cooperative formation with 3, 4, 5, 6 agents
+
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+
+### Train on cooperative line with 3, 4, 5, 6 agents
+
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+
 
