@@ -79,7 +79,7 @@ This demo shows the strong scalability of SS-MARL. Despite being trained with on
 
 ### Zero-shot transfer to cooperative line with 3, 6, 12 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/line/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
 
 ## Demo 2
 This demo shows that SS-MARL can also handle other cooperative tasks. We retrain SS-MARL on cooperative formation and cooperative line tasks. Here is the introduction of two cooperative tasks.
@@ -92,6 +92,6 @@ This demo shows that SS-MARL can also handle other cooperative tasks. We retrain
 
 ### Train on cooperative line with 3, 4, 5, 6 agents
 
-<img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
 
 
