@@ -98,10 +98,8 @@ These figures show the average step rewards per agent and average step costs per
 
 * Cooperative formation tasks
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_reward.png" alt="formation_reward" />  
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_cost.png" alt="formation_cost" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_reward.png" alt="formation_reward" style="height: 200px; " />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_cost.png" alt="formation_cost" style="height: 200px; " />
 
 * Cooperative line tasks
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_reward.png" alt="line_reward" />  
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_cost.png" alt="line_cost" />
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_reward.png" alt="line_reward" style="height: 200px;"  />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_cost.png" alt="line_cost" style="height: 200px;"  />
