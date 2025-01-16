@@ -103,3 +103,9 @@ These figures show the average step rewards per agent and average step costs per
 * Cooperative line tasks
 
 <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_reward.png" alt="line_reward" style="height: 200px;"  />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_cost.png" alt="line_cost" style="height: 200px;"  />
+
+## Demo 3
+This is the hardware experiments demo. We conduct two cooperative navigation tasks on 3 and 6 miniature vehicles respectively. These vehicles are omnidirectional mobile with Mecanum wheels and the motion capture system is used to obtain the true positions of agents. These hardware experiments have shown us the potential of using SS-MARL in practical multi-robot applications.
+
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/hardware/navigation_3agents.gif" alt="3agents" style="width: 750px;" />  
+<img src="https://anonymous.4open.science/r/SS-MARL/demo/hardware/navigation_6agents.gif" alt="6agents" style="width: 750px;" />
