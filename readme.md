@@ -8,13 +8,13 @@ Implementation of *Scalable Safe Multi-Agent Reinforcement Learning for Multi-Ag
 
 We recommend to use CONDA to install the requirements:
 ```shell
-conda create -n SSMARL python=3.7
-conda activate SSMARL
-pip install -r requirements.txt
+conda create -n ssmarl python=3.9
+conda activate ssmarl
+pip3 install -r requirements.txt
 ```
 Install SS-MARL:
 ```shell
-pip intall -e.
+pip3 intall -e .
 ```
 
 ## Run
