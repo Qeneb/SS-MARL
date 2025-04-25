@@ -20,9 +20,9 @@ class SSMARLPolicy:
         self.share_obs_space = cent_obs_space
         self.act_space = act_space
 
-        self.actor = G_Actor(args, self.obs_space, self.act_space, self.device)
-        self.critic = G_Critic(args, self.share_obs_space, self.device)
-        self.cost_critic = G_Critic(args, self.share_obs_space, self.device)
+        self.actor = G_Actor(args, self.act_space, self.device)
+        self.critic = G_Critic(args, self.device)
+        self.cost_critic = G_Critic(args, self.device)
 
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(),
                                                 lr=self.lr, eps=self.opti_eps,
@@ -44,8 +44,8 @@ class SSMARLPolicy:
         update_linear_schedule(self.critic_optimizer, episode, episodes, self.critic_lr)
         update_linear_schedule(self.cost_optimizer, episode, episodes, self.critic_lr)
 
-    def get_actions(self, agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, nodes_feats, edge_index, edge_attr, rnn_states_actor, rnn_states_critic, masks, available_actions=None,
-                    deterministic=False, rnn_states_cost=None):
+    def get_actions(self, agent_id, nodes_feats, edge_index, edge_attr, rnn_states_actor, rnn_states_critic, rnn_states_cost, masks, available_actions=None,
+                    deterministic=False):
         """
         Compute actions and value function predictions for the given inputs.
         """
@@ -58,30 +58,30 @@ class SSMARLPolicy:
                                                                  available_actions,
                                                                  deterministic)
 
-        values, rnn_states_critic = self.critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_critic, masks)
+        values, rnn_states_critic = self.critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_critic, masks)
         if rnn_states_cost is None:
             return values, actions, action_log_probs, rnn_states_actor, rnn_states_critic
         else:
-            cost_preds, rnn_states_cost = self.cost_critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_cost, masks)
+            cost_preds, rnn_states_cost = self.cost_critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_cost, masks)
             return values, actions, action_log_probs, rnn_states_actor, rnn_states_critic, cost_preds, rnn_states_cost
 
 
-    def get_values(self, agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_critic, masks):
+    def get_values(self, agent_id, nodes_feats, edge_index, edge_attr, rnn_states_critic, masks):
         """
         Get value function predictions.
         """
-        values, _ = self.critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_critic, masks)
+        values, _ = self.critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_critic, masks)
         return values
 
-    def get_cost_values(self, agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_cost, masks):
+    def get_cost_values(self, agent_id, nodes_feats, edge_index, edge_attr, rnn_states_cost, masks):
         """
         Get constraint cost predictions.
         """
-        cost_preds, _ = self.cost_critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_cost, masks)
+        cost_preds, _ = self.cost_critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_cost, masks)
         return cost_preds
 
-    def evaluate_actions(self, agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, nodes_feats, edge_index, edge_attr, rnn_states_actor, rnn_states_critic, action, masks,
-                         available_actions=None, active_masks=None, rnn_states_cost=None):
+    def evaluate_actions(self, agent_id, nodes_feats, edge_index, edge_attr, rnn_states_actor, rnn_states_critic, rnn_states_cost, action, masks,
+                         available_actions=None, active_masks=None):
         """
         Get action logprobs / entropy and value function predictions for actor update.
         """
@@ -91,8 +91,8 @@ class SSMARLPolicy:
                                                                                             masks,
                                                                                             available_actions,
                                                                                             active_masks)
-        values, _ = self.critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_critic, masks)
-        cost_values, _ = self.cost_critic(agent_id, cent_nodes_feats, cent_edge_index, cent_edge_attr, rnn_states_cost, masks)
+        values, _ = self.critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_critic, masks)
+        cost_values, _ = self.cost_critic(agent_id, nodes_feats, edge_index, edge_attr, rnn_states_cost, masks)
         # values, _ = self.critic(cent_obs, rnn_states_critic, masks)
         return values, action_log_probs, dist_entropy, cost_values, action_mu, action_std
 

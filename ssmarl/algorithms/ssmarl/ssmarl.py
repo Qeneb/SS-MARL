@@ -178,8 +178,7 @@ class SSMARL():
 
         return kl.sum(1, keepdim=True)
 
-    def conjugate_gradient(self, actor, agent_id, nodes_feats, edge_index, edge_attr, rnn_states, action, masks, available_actions, active_masks, b, nsteps,
-                           residual_tol=1e-10):
+    def conjugate_gradient(self, actor, agent_id, nodes_feats, edge_index, edge_attr, rnn_states, action, masks, available_actions, active_masks, b, nsteps, residual_tol=1e-10):
         x = torch.zeros(b.size()).to(device=self.device)
         r = b.clone()
         p = b.clone()
@@ -255,7 +254,7 @@ class SSMARL():
         """
         Update actor and critic networks.
         """
-        agent_id, share_nodes_feats, share_edge_index, share_edge_attr, nodes_feats, edge_index, edge_attr, rnn_states_batch, rnn_states_critic_batch, actions_batch, \
+        agent_id, nodes_feats, edge_index, edge_attr, rnn_states_batch, rnn_states_critic_batch, actions_batch, \
         value_preds_batch, return_batch, masks_batch, active_masks_batch, old_action_log_probs_batch, \
         adv_targ, available_actions_batch, factor_batch, cost_preds_batch, cost_returns_batch, rnn_states_cost_batch, \
         cost_adv_targ, aver_episode_costs = sample
@@ -274,17 +273,18 @@ class SSMARL():
         # values, action_log_probs, dist_entropy, cost_values, action_mu, action_std
 
         values, action_log_probs, dist_entropy, cost_values, action_mu, action_std = self.policy.evaluate_actions(
-            agent_id, share_nodes_feats, share_edge_index, share_edge_attr, 
+            agent_id, 
             nodes_feats, edge_index, edge_attr,
             rnn_states_batch,
             rnn_states_critic_batch,
+            rnn_states_cost_batch,
             actions_batch,
             masks_batch,
             available_actions_batch,
-            active_masks_batch,
-            rnn_states_cost_batch)
+            active_masks_batch
+            )
 
-        # todo: reward critic update
+        # reward critic update
         value_loss = self.cal_value_loss(values, value_preds_batch, return_batch, active_masks_batch)
         self.policy.critic_optimizer.zero_grad()
         # (value_loss * self.value_loss_coef).backward()
@@ -296,7 +296,7 @@ class SSMARL():
             critic_grad_norm = get_gard_norm(self.policy.critic.parameters())
         self.scaler.step(self.policy.critic_optimizer)
 
-        # todo: cost critic update
+        # cost critic update
         cost_loss = self.cal_value_loss(cost_values, cost_preds_batch, cost_returns_batch, active_masks_batch)
         self.policy.cost_optimizer.zero_grad()
         # (cost_loss * self.value_loss_coef).backward()
@@ -309,26 +309,32 @@ class SSMARL():
         # self.policy.cost_optimizer.step()
         self.scaler.step(self.policy.cost_optimizer)
 
-        # todo: actor update
+        # Actor update 
+        # To solve this optimization problem:
+        # min G * || theta - theta_old ||
+        # s.t. D + B * || theta - theta_old || <= 0
+        # 1/2 * || theta - theta_old || * E * || theta - theta_old ||^T <= delta
+        # G: reward(advantage) gradient
+        # B: cost(advantage) gradients
+        # E: Hessian of KL divergence (Fisher matrix of theta_old)
 
+        # The extent exceeding the safety bound: D + B * || theta - theta_old ||
         rescale_constraint_val = (aver_episode_costs.mean() - self._max_lin_constraint_val) * (1 - self.gamma)
+        # rescale_constraint_val = self.EPS if rescale_constraint_val == 0 else rescale_constraint_val
 
-        if rescale_constraint_val == 0:
-            rescale_constraint_val = self.EPS
-
-        # todo:reward-g
+        # calculate G: reward(advantage) gradient
         ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
         if self._use_policy_active_masks:
             reward_loss = (torch.sum(ratio * factor_batch * adv_targ, dim=-1, keepdim=True) *
                            active_masks_batch).sum() / active_masks_batch.sum()
         else:
             reward_loss = torch.sum(ratio * factor_batch * adv_targ, dim=-1, keepdim=True).mean()
-        reward_loss = - reward_loss  # todo:
+        reward_loss = - reward_loss
         reward_loss_grad = torch.autograd.grad(reward_loss, self.policy.actor.parameters(), retain_graph=True,
                                                allow_unused=True)
         reward_loss_grad = self.flat_grad(reward_loss_grad)
 
-        # todo:cost-b
+        # calculate B: cost(advantage) gradient
         if self._use_policy_active_masks:
             cost_loss = (torch.sum(ratio * factor_batch * (cost_adv_targ), dim=-1, keepdim=True) *
                          active_masks_batch).sum() / active_masks_batch.sum()
@@ -340,7 +346,9 @@ class SSMARL():
         B_cost_loss_grad = cost_loss_grad.unsqueeze(0)
         B_cost_loss_grad = self.flat_grad(B_cost_loss_grad)
 
-        # todo: compute lamda_coef and v_coef
+        # compute lamda_coef and v_coef
+        # calculate E^{-1} * G and E^{-1} * B
+        # Solve Ex = G, calculate E^{-1} * G
         g_step_dir = self.conjugate_gradient(self.policy.actor, agent_id,
                                              nodes_feats, edge_index, edge_attr,
                                              rnn_states_batch,
@@ -349,7 +357,8 @@ class SSMARL():
                                              available_actions_batch,
                                              active_masks_batch,
                                              reward_loss_grad.data,
-                                             nsteps=10)  # todo: compute H^{-1} g
+                                             nsteps=10)
+        # Solve Ex = B, calculate E^{-1} * B
         b_step_dir = self.conjugate_gradient(self.policy.actor, agent_id,
                                              nodes_feats, edge_index, edge_attr,
                                              rnn_states_batch,
@@ -358,13 +367,12 @@ class SSMARL():
                                              available_actions_batch,
                                              active_masks_batch,
                                              B_cost_loss_grad.data,
-                                             nsteps=10)  # todo: compute H^{-1} b
+                                             nsteps=10)
 
-        q_coef = (reward_loss_grad * g_step_dir).sum(0, keepdim=True)  # todo: compute q_coef: = g^T H^{-1} g
-        r_coef = (reward_loss_grad * b_step_dir).sum(0, keepdim=True)  # todo: compute r_coef: = g^T H^{-1} b
-        s_coef = (cost_loss_grad * b_step_dir).sum(0, keepdim=True)  # todo: compute s_coef: = b^T H^{-1} b
+        q_coef = (reward_loss_grad * g_step_dir).sum(0, keepdim=True)  # compute q_coef: = G^T * E^{-1} * G
+        r_coef = (reward_loss_grad * b_step_dir).sum(0, keepdim=True)  # compute r_coef: = G^T * E^{-1} * B
+        s_coef = (cost_loss_grad * b_step_dir).sum(0, keepdim=True)  # compute s_coef: = B^T * E^{-1} * B
 
-        fraction = self.line_search_fraction #0.5 # 0.5  # line search step size
         loss_improve = 0  # initialization
 
         """self._max_lin_constraint_val = c, B_cost_loss_grad = c in cpo"""
@@ -372,7 +380,9 @@ class SSMARL():
         B_cost_loss_grad_dot = torch.dot(B_cost_loss_grad, B_cost_loss_grad)
         # torch.dot(B_cost_loss_grad, B_cost_loss_grad) # B_cost_loss_grad.mean() * B_cost_loss_grad.mean()
         if (torch.dot(B_cost_loss_grad, B_cost_loss_grad)) <= self.EPS and rescale_constraint_val < 0:
-            # feasible and cost grad is zero---shortcut to pure TRPO update!
+            # Feasible and B is zero: Simple TRPO update
+            # min G * || theta - theta_old ||
+            # s.t. 1/2 * || theta - theta_old || * E * || theta - theta_old ||^T <= delta
             # w, r, s, A, B = 0, 0, 0, 0, 0
             # g_step_dir = torch.tensor(0)
             b_step_dir = torch.tensor(0)
@@ -383,48 +393,50 @@ class SSMARL():
             optim_case = 4
           
         else:
-            # cost grad is nonzero: CPO update!
-            r_coef = (reward_loss_grad * b_step_dir).sum(0, keepdim=True)  # todo: compute r_coef: = g^T H^{-1} b
-            s_coef = (cost_loss_grad * b_step_dir).sum(0, keepdim=True)  # todo: compute s_coef: = b^T H^{-1} b
-            if r_coef == 0:
-                r_coef = self.EPS
-            if s_coef == 0:
-                s_coef = self.EPS
-            positive_Cauchy_value = (
-                        q_coef - (r_coef ** 2) / (self.EPS + s_coef))  # should be always positive (Cauchy-Shwarz)
-            whether_recover_policy_value = 2 * self._max_quad_constraint_val - (
-                    rescale_constraint_val ** 2) / (
-                                                       self.EPS + s_coef)  # does safety boundary intersect trust region? (positive = yes)
+            # B is not zero: CPO update
+            # # min G * || theta - theta_old ||
+            # s.t. D + B * || theta - theta_old || <= 0  (Constraint 1)
+            # 1/2 * || theta - theta_old || * E * || theta - theta_old ||^T <= delta (Constraint 2)
+            r_coef = self.EPS if r_coef == 0 else r_coef
+            s_coef = self.EPS if s_coef == 0 else s_coef
+
+            positive_Cauchy_value = (q_coef - (r_coef ** 2) / (self.EPS + s_coef))  # should be always positive (Cauchy-Shwarz)
+
+            # Relationship between Constraint 1 and Constraint 2
+            whether_recover_policy_value = 2 * self._max_quad_constraint_val - (rescale_constraint_val ** 2) / (self.EPS + s_coef)
+            # whether_recover_policy_value < 0 : Constraint 1 is satisfied     <=> Constraint 2 is satisfied
+            #                                    Constraint 1 is not satisfied <=> Constraint 2 is not satisfied
+            # whether_recover_policy_value >= 0 : Constraint 1 is satisfied     => Constraint 2 is partially satisfied
+
             if rescale_constraint_val < 0 and whether_recover_policy_value < 0:
-                # point in trust region is feasible and safety boundary doesn't intersect
+                # When x = 0, Constraint 1 is satisfied and Constraint 2 is satisfied
                 # ==> entire trust region is feasible
                 optim_case = 3
-              
             elif rescale_constraint_val < 0 and whether_recover_policy_value >= 0:
-                # x = 0 is feasible and safety boundary intersects
+                # When x = 0, Constraint 1 is satisfied and Constraint 2 is partially satisfied
                 # ==> most of trust region is feasible
                 optim_case = 2
-                
             elif rescale_constraint_val >= 0 and whether_recover_policy_value >= 0:
-                # x = 0 is infeasible and safety boundary intersects
-                # ==> part of trust region is feasible, recovery possible
+                # When x = 0, Constraint 1 is not satisfied and Constraint 2 is partially satisfied
+                # ==> part of trust region is feasible, try to recover the infeasible policy
                 optim_case = 1
-               
             else:
-                # x = 0 infeasible, and safety halfspace is outside trust region
+                # When x = 0, Constraint 1 is not satisfied and Constraint 2 is not satisfied
                 # ==> whole trust region is infeasible, try to fail gracefully
                 optim_case = 0
                 
-        if whether_recover_policy_value == 0:
-            whether_recover_policy_value = self.EPS
+        whether_recover_policy_value = self.EPS if whether_recover_policy_value == 0 else whether_recover_policy_value
         
+        # Simple TRPO update
         if optim_case in [3, 4]:
             lam = torch.sqrt(
                 (q_coef / (2 * self._max_quad_constraint_val)))  # self.lamda_coef = lam = np.sqrt(q / (2 * target_kl))
             nu = torch.tensor(0)  # v_coef = 0
+        # CPO update
         elif optim_case in [1, 2]:
             LA, LB = [0, r_coef / rescale_constraint_val], [r_coef / rescale_constraint_val, np.inf]
             LA, LB = (LA, LB) if rescale_constraint_val < 0 else (LB, LA)
+            # Limit x in L[0]~L[1]
             proj = lambda x, L: max(L[0], min(L[1], x))
             lam_a = proj(torch.sqrt(positive_Cauchy_value / whether_recover_policy_value), LA)
             lam_b = proj(torch.sqrt(q_coef / (torch.tensor(2 * self._max_quad_constraint_val))), LB)
@@ -435,21 +447,29 @@ class SSMARL():
             f_b = lambda lam: -0.5 * (q_coef / (self.EPS + lam) + 2 * self._max_quad_constraint_val * lam)
             lam = lam_a if f_a(lam_a) >= f_b(lam_b) else lam_b
             nu = max(0, lam * rescale_constraint_val - r_coef) / (self.EPS + s_coef)
+        # Fail
         else:
             lam = torch.tensor(0)
             nu = torch.sqrt(torch.tensor(2 * self._max_quad_constraint_val) / (self.EPS + s_coef))
+
+        # x_a = 1/lam * E^{-1} * (G + nu * B)
+        # x_b = nu * E^{-1} * B, nu = sqrt(2 * delta / B^T * E^{-1} * B) 
+        # x_a CPO update, x_b is TRPO recovery update
+        # TODO x_b only works when only one constraint is considered 
+        # 目前 Cost Loss 是把所有 Costs 求平均, cost_loss_grad 是一个尺寸为 param_num × 1 的 tensor, 多个 costs 和一个 cost 没区别
 
         x_a = (1. / (lam + self.EPS)) * (g_step_dir + nu * b_step_dir)
         x_b = (nu * b_step_dir)
         x = x_a if optim_case > 0 else x_b
 
-        # todo: update actor and learning
+        ''' Update actor '''
+
+        # Record the old actor
         reward_loss = reward_loss.data.cpu().numpy()
         cost_loss = cost_loss.data.cpu().numpy()
         params = self.flat_params(self.policy.actor)
 
         old_actor = G_Actor(self.policy.args,
-                            self.policy.obs_space,
                             self.policy.act_space,
                             self.device)
         self.update_model(old_actor, params)
@@ -457,27 +477,25 @@ class SSMARL():
         expected_improve = -torch.dot(x, reward_loss_grad).sum(0, keepdim=True)
         expected_improve = expected_improve.data.cpu().numpy()
 
-        # line search
+        # Line search
         flag = False
-        fraction_coef = self.fraction_coef
-        # print("fraction_coef", fraction_coef)
         for i in range(self.ls_step):
             x_norm = torch.norm(x)
-            if x_norm > 0.5:
-                x = x * 0.5 / x_norm
+            x = x * 0.5 / x_norm if x_norm > 0.5 else x
 
-            new_params = params - fraction_coef * (fraction**i) * x
+            new_params = params - self.fraction_coef * (self.line_search_fraction**i) * x
             self.update_model(self.policy.actor, new_params)
-            values, action_log_probs, dist_entropy, new_cost_values, action_mu, action_std = self.policy.evaluate_actions(
-                agent_id, share_nodes_feats, share_edge_index, share_edge_attr, 
+            values, action_log_probs, dist_entropy, _, action_mu, action_std = self.policy.evaluate_actions(
+                agent_id,
                 nodes_feats, edge_index, edge_attr,
                 rnn_states_batch,
                 rnn_states_critic_batch,
+                rnn_states_cost_batch,
                 actions_batch,
                 masks_batch,
                 available_actions_batch,
-                active_masks_batch,
-                rnn_states_cost_batch)
+                active_masks_batch
+                )
 
             ratio = torch.exp(action_log_probs - old_action_log_probs_batch)
             if self._use_policy_active_masks:
@@ -507,16 +525,15 @@ class SSMARL():
                                     old_actor=old_actor)
             kl = kl.mean()
 
-            # see https: // en.wikipedia.org / wiki / Backtracking_line_search
+            # line search succeed
             if ((kl < self.kl_threshold) and (loss_improve < 0 if optim_case > 1 else True)
                     and (new_cost_loss.mean() - cost_loss.mean() <= max(-rescale_constraint_val, 0))):
                 flag = True
-                # print("line search successful")
                 break
-            expected_improve *= fraction
+            expected_improve *= self.line_search_fraction
 
         if not flag:
-            # line search failed
+            # line search fail
             print("line search failed")
             params = self.flat_params(old_actor)
             self.update_model(self.policy.actor, params)

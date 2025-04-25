@@ -5,20 +5,22 @@ from torch_geometric.nn import MessagePassing, TransformerConv
 
 class Embedding(MessagePassing):
     def __init__(self,
-                 hidden_size: int,
+                 embedding_nums: int = 5,
+                 embedding_dim: int = 4,
+                 embedding_hidden_size: int = 64,
                  edge_dim: int = 0,
                  device: str = 'cpu'):
         super(Embedding, self).__init__(aggr='add')
         self.active_func = nn.ReLU()
-        self.layer_norm = nn.LayerNorm(hidden_size)
+        self.layer_norm = nn.LayerNorm(embedding_hidden_size)
         self.init_method = nn.init.orthogonal_
-        self.entity_embed = nn.Embedding(5, 4)
-        self.lin1 = nn.Linear(4 + edge_dim, hidden_size)
+        self.entity_embed = nn.Embedding(embedding_nums, embedding_dim)
+        self.lin1 = nn.Linear(embedding_dim + edge_dim, embedding_hidden_size)
 
         # Initialize the hidden layers
         self.layers = nn.ModuleList()
         for _ in range(2):
-            self.layers.append(nn.Linear(hidden_size, hidden_size))
+            self.layers.append(nn.Linear(embedding_hidden_size, embedding_hidden_size))
             self.layers.append(self.active_func)
             self.layers.append(self.layer_norm)
 
@@ -43,32 +45,58 @@ class Embedding(MessagePassing):
     def message(self, x_j, edge_attr):
         entity_type_j = x_j[:,-1].long()
         entity_embed_j = self.entity_embed(entity_type_j)
-
         node_feat = torch.cat([entity_embed_j, edge_attr], dim=1)
 
-        # Apply the first linear layer
+        # Apply the final linear layer
         x = self.lin1(node_feat)
         x = self.active_func(x)
         x = self.layer_norm(x)
 
         # Apply the hidden layers
+        residual = x
         for layer in self.layers:
             x = layer(x)
+        
+        x = x + residual
+        x = self.active_func(x)
+        x = self.layer_norm(x)
 
         return x
 
 class GNNbase(nn.Module):
-    def __init__(self, in_channels, out_channels, num_heads, edge_dim, graph_aggr, device='cpu'):
+    def __init__(self, args, graph_aggr, device='cpu'):
         super(GNNbase, self).__init__()
         # in_channels is the dimension of node_feat
         self.device = device
+        self.gnn_num_heads = args.gnn_num_heads
+        self.gnn_num_layers = args.gnn_num_layers
+        self.gnn_hidden_size = args.gnn_hidden_size
+        self.gnn_edge_dim = args.gnn_edge_dim
+        self.gnn_out_channels = args.gnn_out_channels
         self.graph_aggr = graph_aggr
 
-        self.EmbeddingLayer = Embedding(16, edge_dim, device=device)
-        # concat is a combination of multi-head attention, concatenation and addition,
-        # concatenation will affect the dimensions of the output
-        self.GAT1 = TransformerConv(16, 16, heads=num_heads, concat=False, edge_dim=edge_dim)
-        self.GAT2 = TransformerConv(16, out_channels, heads=num_heads, concat=False, edge_dim=edge_dim)
+        self.embedding_nums = args.embedding_nums
+        self.embedding_dim = args.embedding_dim
+        self.embedding_hidden_size = args.embedding_hidden_size
+        
+        self.num_agents = args.num_agents
+        
+        # Embedding layer
+        self.EmbeddingLayer = Embedding(self.embedding_nums, self.embedding_dim, self.embedding_hidden_size, self.gnn_edge_dim, device=device)
+        # GNN layers
+        self.transformer_layers = nn.ModuleList()
+        for i in range(self.gnn_num_layers):
+            # Here concat will affect the output dimension
+            if not i:
+                self.transformer_layers.append(
+                    TransformerConv(self.embedding_hidden_size, self.gnn_hidden_size, heads=self.gnn_num_heads, concat=False, edge_dim=self.gnn_edge_dim)
+                )
+            else:
+                self.transformer_layers.append(
+                    TransformerConv(self.gnn_hidden_size, self.gnn_hidden_size, heads=self.gnn_num_heads, concat=False, edge_dim=self.gnn_edge_dim)
+                )
+        # Output layer
+        self.output_head = nn.Linear(self.gnn_hidden_size, self.gnn_out_channels)
         self.activation = nn.ReLU()
         self.to(device)
         self.init_network()
@@ -83,6 +111,7 @@ class GNNbase(nn.Module):
     def forward(self, nodes_feats, edge_index, edge_attr, agent_id):
         batch_size, num_nodes, _ = nodes_feats.shape
 
+        # Add batch index to edge_index for parallel forward
         edge_index_adder = torch.zeros(edge_index.shape,device=self.device)
         i_values = torch.arange(batch_size,device=self.device)
         edge_index_adder[...] = num_nodes * i_values[:, None, None]
@@ -96,11 +125,13 @@ class GNNbase(nn.Module):
         non_nan_mask = ~torch.isnan(edge_attr)
         edge_attr = edge_attr[non_nan_mask].reshape(edge_index.shape[1], -1)
 
-        nodes_feats_embeddings = self.EmbeddingLayer(nodes_feats, edge_index, edge_attr)
+        A = self.EmbeddingLayer(nodes_feats, edge_index, edge_attr)
 
-        A = self.GAT1(nodes_feats_embeddings, edge_index, edge_attr)
-        A = self.GAT2(A, edge_index, edge_attr)
-        A = self.activation(A)
+        for gnn_layer in self.transformer_layers:
+            A = gnn_layer(A, edge_index, edge_attr)
+            A = self.activation(A)
+        
+        A = self.output_head(A)
         
         if self.graph_aggr == 'agent':
             # Agent Aggregation
@@ -111,10 +142,9 @@ class GNNbase(nn.Module):
         elif self.graph_aggr == 'graph':
             # Graph Aggregation
             A = A.view(batch_size, num_nodes, -1)
-            num_agents = torch.sum(torch.eq(nodes_feats, 0))/batch_size
+            num_agents = torch.tensor(self.num_agents)
             A = torch.mean(A[:, :num_agents.long()], dim=1)
         return A
-
 
 if __name__ == "__main__":
     # Test
