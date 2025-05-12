@@ -29,7 +29,9 @@ class TestSSMARLPolicy(unittest.TestCase):
             lr=0.001,
             critic_lr=0.001,
             opti_eps=1e-5,
-            weight_decay=0.0
+            weight_decay=0.0,
+            num_costs=2,
+            num_agents=1
         )
         self.device = torch.device("cpu")
 
@@ -50,7 +52,7 @@ class TestSSMARLPolicy(unittest.TestCase):
         self.edge_attr = torch.rand(1, 5, 4)
         self.rnn_states_actor = torch.zeros(1, 1, self.args.hidden_size)
         self.rnn_states_critic = torch.zeros(1, 1, self.args.hidden_size)
-        self.rnn_states_cost = torch.zeros(1, 1, self.args.hidden_size)
+        self.rnn_states_cost = [torch.zeros(1, 1, self.args.hidden_size) for _ in range(self.args.num_costs)]
         self.masks = torch.ones(1, 1)
         self.available_actions = torch.ones(1, 5)
         self.action = torch.rand(1, 2)
@@ -74,8 +76,16 @@ class TestSSMARLPolicy(unittest.TestCase):
         self.assertEqual(values.shape, torch.Size([1, 1]))
         self.assertEqual(rnn_states_actor.shape, self.rnn_states_actor.shape)
         self.assertEqual(rnn_states_critic.shape, self.rnn_states_critic.shape)
-        self.assertEqual(cost_preds.shape, torch.Size([1, 1]))
-        self.assertEqual(rnn_states_cost.shape, self.rnn_states_critic.shape)
+        self.assertIsInstance(cost_preds, list)
+        self.assertIsInstance(rnn_states_cost, list)
+        self.assertEqual(len(cost_preds), self.args.num_costs)
+        self.assertEqual(len(rnn_states_cost), self.args.num_costs)
+        # 检查每个元素的形状
+        for pred in cost_preds:
+            self.assertEqual(pred.shape, torch.Size([1, 1]))
+        for state in rnn_states_cost:
+            self.assertEqual(state.shape, self.rnn_states_critic.shape)
+
 
     def test_get_values(self):
         values = self.policy.get_values(
@@ -101,7 +111,11 @@ class TestSSMARLPolicy(unittest.TestCase):
         )
 
         # Assertions
-        self.assertEqual(cost_values.shape, torch.Size([1, 1]))
+        # cost_values现在是列表
+        self.assertIsInstance(cost_values, list)
+        self.assertEqual(len(cost_values), self.args.num_costs)
+        for value in cost_values:
+            self.assertEqual(value.shape, torch.Size([1, 1]))
 
     def test_evaluate_actions(self):
         values, action_log_probs, dist_entropy, cost_values, action_mu, action_std = self.policy.evaluate_actions(
@@ -121,9 +135,13 @@ class TestSSMARLPolicy(unittest.TestCase):
         self.assertEqual(values.shape, torch.Size([1, 1]))
         self.assertEqual(action_log_probs.shape, torch.Size([1, 2]))
         self.assertIsInstance(dist_entropy, torch.Tensor)
-        self.assertEqual(cost_values.shape, torch.Size([1, 1]))
         self.assertEqual(action_mu.shape, torch.Size([1, 2]))
         self.assertEqual(action_std.shape, torch.Size([1, 2]))
+         # cost_values现在是列表
+        self.assertIsInstance(cost_values, list)
+        self.assertEqual(len(cost_values), self.args.num_costs)
+        for value in cost_values:
+            self.assertEqual(value.shape, torch.Size([1, 1]))
 
 
 if __name__ == "__main__":

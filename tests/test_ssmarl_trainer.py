@@ -52,7 +52,8 @@ class TestSSMARLTrainer(unittest.TestCase):
             use_huber_loss=False,
             use_popart=False,
             use_value_active_masks=False,
-            num_agents=1
+            num_agents=1,
+            num_costs=2
         )
         self.device = torch.device("cpu")
 
@@ -68,33 +69,39 @@ class TestSSMARLTrainer(unittest.TestCase):
 
         # Initialize SSMARL trainer
         self.trainer = SSMARL(self.args, self.policy, device=self.device)
-
+        
         # Mock inputs
+        BATCH_SIZE = 5
+        NODE_NUM = 5
+        EDGE_NUM = 4
+        NODE_FEAT_DIM = 4
+        EDGE_FEAT_DIM = 4
+        ACTION_DIM = 2
         self.sample = (
-            torch.tensor([[0]]),  # agent_id
+            torch.zeros(BATCH_SIZE, 1),  # agent_id
             # torch.rand(1, 5, 4),  # share_nodes_feats
             # torch.randint(0, 5, (1, 2, 5)),  # share_edge_index
             # torch.rand(1, 5, 4),  # share_edge_attr
-            torch.rand(1, 5, 4),  # nodes_feats
+            torch.rand(BATCH_SIZE, NODE_NUM, NODE_FEAT_DIM),  # nodes_feats
             # torch.randint(0, 5, (1, 2, 5)),  # edge_index
-            torch.tensor([[[1, 2, 3, 4], [0, 0, 0, 0]]]), # edge_index
-            torch.rand(1, 4, 4),  # edge_attr
-            torch.zeros(1, 1, self.args.hidden_size),  # rnn_states_batch
-            torch.zeros(1, 1, self.args.hidden_size),  # rnn_states_critic_batch
-            torch.rand(1, 2),  # actions_batch
-            torch.rand(1, 1),  # value_preds_batch
-            torch.rand(1, 1),  # return_batch
-            torch.ones(1, 1),  # masks_batch
-            torch.ones(1, 1),  # active_masks_batch
-            torch.rand(1, 2),  # old_action_log_probs_batch
-            torch.rand(1, 1),  # adv_targ
-            torch.ones(1, 5),  # available_actions_batch
-            torch.rand(1, 1),  # factor_batch
-            torch.rand(1, 2),  # cost_preds_batch
-            torch.rand(1, 2),  # cost_returns_batch
-            torch.zeros(1, 1, self.args.hidden_size),  # rnn_states_cost_batch
-            torch.rand(1, 2),  # cost_adv_targ
-            torch.rand(1, 2)  # aver_episode_costs
+            torch.cat([torch.arange(1, EDGE_NUM + 1).reshape(1, EDGE_NUM), torch.zeros(1, EDGE_NUM, dtype=torch.int32)], dim=0).unsqueeze(0).repeat(BATCH_SIZE, 1, 1), # edge_index
+            torch.rand(BATCH_SIZE, EDGE_NUM, EDGE_FEAT_DIM),  # edge_attr
+            torch.zeros(BATCH_SIZE, 1, self.args.hidden_size),  # rnn_states_batch
+            torch.zeros(BATCH_SIZE, 1, self.args.hidden_size),  # rnn_states_critic_batch
+            torch.rand(BATCH_SIZE, ACTION_DIM),  # actions_batch
+            torch.rand(BATCH_SIZE, 1),  # value_preds_batch
+            torch.rand(BATCH_SIZE, 1),  # return_batch
+            torch.ones(BATCH_SIZE, 1),  # masks_batch
+            torch.ones(BATCH_SIZE, 1),  # active_masks_batch
+            torch.rand(BATCH_SIZE, ACTION_DIM),  # old_action_log_probs_batch
+            torch.rand(BATCH_SIZE, 1),  # adv_targ
+            torch.ones(BATCH_SIZE, ACTION_DIM),  # available_actions_batch
+            torch.rand(BATCH_SIZE, 1),  # factor_batch
+            torch.rand(BATCH_SIZE, self.args.num_costs),  # cost_preds_batch
+            torch.rand(BATCH_SIZE, self.args.num_costs),  # cost_returns_batch
+            torch.zeros(BATCH_SIZE, self.args.num_costs, 1, self.args.hidden_size),  # rnn_states_cost_batch
+            torch.rand(BATCH_SIZE, self.args.num_costs),  # cost_adv_targ
+            torch.rand(BATCH_SIZE, self.args.num_costs)  # aver_episode_costs
         )
 
     def test_cal_value_loss(self):

@@ -4,6 +4,7 @@ import torch.nn as nn
 from ssmarl.utils.util import get_gard_norm, huber_loss, mse_loss
 from ssmarl.utils.popart import PopArt
 from ssmarl.algorithms.utils.util import check
+from ssmarl.algorithms.ssmarl.algorithm.SSMARLPolicy import SSMARLPolicy
 from ssmarl.algorithms.ssmarl.algorithm.g_actor_critic import G_Actor
 from torch.nn.utils import clip_grad_norm
 import copy
@@ -16,17 +17,25 @@ class SSMARL():
     """
     def __init__(self,
                  args,
-                 policy, attempt_feasible_recovery=False,
-                 attempt_infeasible_recovery=False, revert_to_last_safe_point=False, delta_bound=0.011,
+                 policy: SSMARLPolicy, 
+                 attempt_feasible_recovery=False,
+                 attempt_infeasible_recovery=False, 
+                 revert_to_last_safe_point=False, 
+                 delta_bound=0.011,
                  safety_bound=0.1,
-                 _backtrack_ratio=0.8, _max_backtracks=15, _constraint_name_1="trust_region",
-                 _constraint_name_2="safety_region", linesearch_infeasible_recovery=True, accept_violation=False,
+                 _backtrack_ratio=0.8, 
+                 _max_backtracks=15, 
+                 _constraint_name_1="trust_region",
+                 _constraint_name_2="safety_region", 
+                 linesearch_infeasible_recovery=True, 
+                 accept_violation=False,
                  learn_margin=False,
                  device=torch.device("cpu")):
         self.args = args
         self.device = device
         self.tpdv = dict(dtype=torch.float32, device=device)
         self.policy = policy
+        self.num_costs = args.num_costs
 
         self.clip_param = args.clip_param
         self.num_mini_batch = args.num_mini_batch
@@ -296,18 +305,23 @@ class SSMARL():
             critic_grad_norm = get_gard_norm(self.policy.critic.parameters())
         self.scaler.step(self.policy.critic_optimizer)
 
-        # cost critic update
-        cost_loss = self.cal_value_loss(cost_values, cost_preds_batch, cost_returns_batch, active_masks_batch)
-        self.policy.cost_optimizer.zero_grad()
-        # (cost_loss * self.value_loss_coef).backward()
-        self.scaler.scale((cost_loss * self.value_loss_coef)).backward()
-        self.scaler.unscale_(self.policy.cost_optimizer)
-        if self._use_max_grad_norm:
-            cost_grad_norm = nn.utils.clip_grad_norm_(self.policy.cost_critic.parameters(), self.max_grad_norm)
-        else:
-            cost_grad_norm = get_gard_norm(self.policy.cost_critic.parameters())
-        # self.policy.cost_optimizer.step()
-        self.scaler.step(self.policy.cost_optimizer)
+        # cost critics update
+        costs_losses = []
+        cost_grad_norms = []
+        for i in range(self.num_costs):
+            cost_loss = self.cal_value_loss(cost_values[i], cost_preds_batch[:, i], cost_returns_batch[:, i], active_masks_batch)
+            self.policy.cost_optimizers[i].zero_grad()
+            # (cost_loss * self.value_loss_coef).backward()
+            self.scaler.scale((cost_loss * self.value_loss_coef)).backward()
+            self.scaler.unscale_(self.policy.cost_optimizers[i])
+            if self._use_max_grad_norm:
+                cost_grad_norm = nn.utils.clip_grad_norm_(self.policy.cost_critics[i].parameters(), self.max_grad_norm)
+            else:
+                cost_grad_norm = get_gard_norm(self.policy.cost_critics[i].parameters())
+            # self.policy.cost_optimizer.step()
+            self.scaler.step(self.policy.cost_optimizers[i])
+            costs_losses.append(cost_loss)
+            cost_grad_norms.append(cost_grad_norm)
 
         # Actor update 
         # To solve this optimization problem:
@@ -431,6 +445,7 @@ class SSMARL():
         if optim_case in [3, 4]:
             lam = torch.sqrt(
                 (q_coef / (2 * self._max_quad_constraint_val)))  # self.lamda_coef = lam = np.sqrt(q / (2 * target_kl))
+            # the key difference between TRPO and CPO is nu !
             nu = torch.tensor(0)  # v_coef = 0
         # CPO update
         elif optim_case in [1, 2]:
@@ -447,17 +462,19 @@ class SSMARL():
             f_b = lambda lam: -0.5 * (q_coef / (self.EPS + lam) + 2 * self._max_quad_constraint_val * lam)
             lam = lam_a if f_a(lam_a) >= f_b(lam_b) else lam_b
             nu = max(0, lam * rescale_constraint_val - r_coef) / (self.EPS + s_coef)
-        # Fail
+        # Try to recover the policy, TRPO update on Cost value
         else:
             lam = torch.tensor(0)
             nu = torch.sqrt(torch.tensor(2 * self._max_quad_constraint_val) / (self.EPS + s_coef))
 
+        
+        # TODO x_b only works when only one constraint is considered 
+        # 目前 Cost_loss 是把所有 Costs 求平均 (相当于每个 Cost 权重相同), cost_loss_grad 是一个尺寸为 param_num × 1 的 tensor, 多个 costs 和一个 cost 没区别
+        # 路线1：一个 Cost Critic 但有多维度输出，修改 Cost 的 Loss
+        # 路线2：多个 Cost Critic, 每个 Cost Critic 单独更新
         # x_a = 1/lam * E^{-1} * (G + nu * B)
         # x_b = nu * E^{-1} * B, nu = sqrt(2 * delta / B^T * E^{-1} * B) 
         # x_a CPO update, x_b is TRPO recovery update
-        # TODO x_b only works when only one constraint is considered 
-        # 目前 Cost Loss 是把所有 Costs 求平均, cost_loss_grad 是一个尺寸为 param_num × 1 的 tensor, 多个 costs 和一个 cost 没区别
-
         x_a = (1. / (lam + self.EPS)) * (g_step_dir + nu * b_step_dir)
         x_b = (nu * b_step_dir)
         x = x_a if optim_case > 0 else x_b
@@ -637,6 +654,3 @@ class SSMARL():
     def prep_rollout(self):
         self.policy.actor.eval()
         self.policy.critic.eval()
-
-   
-
