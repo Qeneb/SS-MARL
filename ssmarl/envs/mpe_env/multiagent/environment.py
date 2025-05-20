@@ -1,10 +1,8 @@
 import gym
 from gym import spaces
-from gym.envs.registration import EnvSpec
 import numpy as np
-from typing import Callable, List, Tuple, Dict, Union, Optional
+from typing import List
 from ssmarl.envs.mpe_env.multiagent.multi_discrete import MultiDiscrete
-
 
 class MultiAgentEnv(gym.Env):
     metadata = {
@@ -35,7 +33,6 @@ class MultiAgentEnv(gym.Env):
         self.observation_callback = observation_callback
         self.info_callback = info_callback
         self.done_callback = done_callback
-        # environment parameters True for MAPPO, False for CBF-QP
         self.discrete_action_space = discrete_action
         # if true, action is a number 0...N, otherwise action is a one-hot N-dimensional vector
         self.discrete_action_input = False
@@ -59,13 +56,6 @@ class MultiAgentEnv(gym.Env):
                 u_action_space = spaces.Box(low=-agent.u_range, high=+agent.u_range, shape=(world.dim_p,), dtype=np.float32)
             if agent.movable:
                 total_action_space.append(u_action_space)
-            # communication action space
-            if self.discrete_action_space:
-                c_action_space = spaces.Discrete(world.dim_c)
-            else:
-                c_action_space = spaces.Box(low=0.0, high=1.0, shape=(world.dim_c,), dtype=np.float32)
-            if not agent.silent:
-                total_action_space.append(c_action_space)
             # total action space
             if len(total_action_space) > 1:
                 # all action spaces are discrete, so simplify to MultiDiscrete action space
@@ -443,12 +433,12 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
                  reset_callback=None,
                  reward_callback=None,
                  observation_callback=None,
-                 cost_callback=None,
+                 cost_callbacks=None,
                  info_callback=None,
                  done_callback=None,
                  shared_viewer=True,
                  discrete_action=False,
-                 scenario_name="simple_n_graph",
+                 scenario_name="",
                  ):
 
         self.world = world
@@ -460,9 +450,9 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
         self.reset_callback = reset_callback
         self.reward_callback = reward_callback
         self.observation_callback = observation_callback
-        self.cost_callback = cost_callback
         self.info_callback = info_callback
         self.done_callback = done_callback
+        self.cost_callbacks = cost_callbacks
 
         self.discrete_action_space = discrete_action
         # if true, action is a number 0...N, otherwise action is a one-hot N-dimensional vector
@@ -507,8 +497,8 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
                 self.action_space.append(total_action_space[0])
             # observation space
             max_N = len(self.world.entities)
-            self.max_N = max_N
-            self.max_Edges = int(max_N*max_N/2) + 1
+            self.max_N = int(max_N)
+            self.max_Edges = int(self.world.num_agents * (self.world.num_agents + self.world.num_obstacles))
             num_agents = len(self.agents)
             self.num_agents = num_agents
             if isinstance(observation_callback(agent, self.world)[0][0],int):
@@ -541,6 +531,19 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
         else:
             self.viewers = [None] * self.n
         self._reset_render()
+
+    def _get_cost(self, agent):
+        if self.cost_callbacks is None:
+            return np.zeros((self.world.num_costs))
+        else:
+            costs = []
+            for cost_callback in self.cost_callbacks(agent, self.world):
+                if cost_callback is not None:
+                    costs.append(cost_callback(agent, self.world))
+                else:
+                    costs.append(np.zeros((self.world.num_costs)))
+            costs = costs
+            return costs
 
     def step(self, action_n):
         self.current_step += 1
@@ -578,10 +581,10 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
 
         # all agents get total reward in cooperative case
         reward = np.sum(reward_n)
-        cost = np.sum(cost_n)
+        cost = np.sum(cost_n, axis=0)
         if self.shared_reward:
             reward_n = [[reward]] * self.n  
-            cost_n = [[cost]] * self.n
+            cost_n = [cost] * self.n
         self.update_graph(edge_index_n[0])
         return nodes_feats_n, edge_index_n, edge_attr_n, reward_n, cost_n, done_n, info_n
     
@@ -649,7 +652,7 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
                 # import rendering only if we need it
                 # (and don't import for headless machines)
                 # from gym.envs.classic_control import rendering
-                from macpo.envs.mpe_env.multiagent import rendering
+                from ssmarl.envs.mpe_env.multiagent import rendering
 
                 self.viewers[i] = rendering.Viewer(700, 700)
 
@@ -658,7 +661,7 @@ class MultiAgentGraphConstrainEnv(MultiAgentConstrainEnv):
             # import rendering only if we need it
             # (and don't import for headless machines)
             # from gym.envs.classic_control import rendering
-            from macpo.envs.mpe_env.multiagent import rendering
+            from ssmarl.envs.mpe_env.multiagent import rendering
 
             self.render_geoms = []
             self.render_geoms_xform = []

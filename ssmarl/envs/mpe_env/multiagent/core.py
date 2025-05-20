@@ -78,7 +78,7 @@ class Agent(Entity):
         # agents are movable by default
         self.movable = True
         # cannot send communication signals
-        self.silent = False
+        self.silent = True
         # cannot observe the world
         self.blind = False
         # physical motor noise amount
