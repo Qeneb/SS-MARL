@@ -66,19 +66,19 @@ To fine-tune or test a model, users can save their model files in the `ssmarl/mo
 ## Demo 1
 This demo shows the strong scalability of SS-MARL. Despite being trained with only 3 agents, the models are capable of more complex, randomly generated scenarios, even scaling up to a challenge involving 96 agents.  
 ### Train on cooperative navigation with 3 agents
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  
 
 ### Zero-shot transfer to cooperative navigation with 6, 12, 24, 48, 96 agents
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/compress_48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/navigation/compress_96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
+<img src="https://github.com/Qeneb/SS-MARL/demo/navigation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/24agents.gif" alt="24agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/compress_48agents.gif" alt="48agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/navigation/compress_96agents.gif" alt="96agents" style="width: 250px; height: 250px;" />  
 
 ### Zero-shot transfer to cooperative formation with 3, 6, 12 agents
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
 
 ### Zero-shot transfer to cooperative line with 3, 6, 12 agents
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/line/3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/12agents.gif" alt="12agents" style="width: 250px; height: 250px;" />
 
 ## Demo 2
 This demo shows that SS-MARL can also handle other cooperative tasks. We retrain SS-MARL on cooperative formation and cooperative line tasks. Here is the introduction of two cooperative tasks.
@@ -87,25 +87,26 @@ This demo shows that SS-MARL can also handle other cooperative tasks. We retrain
 
 ### Train on cooperative formation with 3, 4, 5, 6 agents
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
 
 ### Train on cooperative line with 3, 4, 5, 6 agents
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_3agents.gif" alt="3agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_4agents.gif" alt="4agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_5agents.gif" alt="5agents" style="width: 250px; height: 250px;" />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/retrain_6agents.gif" alt="6agents" style="width: 250px; height: 250px;" />
 
 ### Rewards and costs curves during training
 These figures show the average step rewards per agent and average step costs per agent on cooperative formation and cooperative line tasks, respectively. As we set the cost upper bound to 1 and episode length to 100, the expected average step costs per agent for both two tasks are 0.01. From the figures, the costs are well constrained below 0.01 gradually. This demonstrates the great safety performance of SS-MARL.
 
 * Cooperative formation tasks
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_reward.png" alt="formation_reward" style="height: 200px; " />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/formation/formation_cost.png" alt="formation_cost" style="height: 200px; " />
+<img src="https://github.com/Qeneb/SS-MARL/demo/formation/formation_reward.png" alt="formation_reward" style="height: 200px; " />  <img src="https://github.com/Qeneb/SS-MARL/demo/formation/formation_cost.png" alt="formation_cost" style="height: 200px; " />
 
 * Cooperative line tasks
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_reward.png" alt="line_reward" style="height: 200px;"  />  <img src="https://anonymous.4open.science/r/SS-MARL/demo/line/line_cost.png" alt="line_cost" style="height: 200px;"  />
+<img src="https://github.com/Qeneb/SS-MARL/demo/line/line_reward.png" alt="line_reward" style="height: 200px;"  />  <img src="https://github.com/Qeneb/SS-MARL/demo/line/line_cost.png" alt="line_cost" style="height: 200px;"  />
 
 ## Demo 3
 This is the hardware experiments demo. We conduct two cooperative navigation tasks on 3 and 6 miniature vehicles respectively. These vehicles are omnidirectional mobile with Mecanum wheels and the motion capture system is used to obtain the true positions of agents. These hardware experiments have shown us the potential of using SS-MARL in practical multi-robot applications.
 
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/hardware/navigation_3agents.gif" alt="3agents" style="width: 750px;" />  
-<img src="https://anonymous.4open.science/r/SS-MARL/demo/hardware/navigation_6agents.gif" alt="6agents" style="width: 750px;" />
+<img src="https://github.com/Qeneb/SS-MARL/demo/hardware/navigation_3agents.gif" alt="3agents" style="width: 750px;" />  
+<img src="https://github.com/Qeneb/SS-MARL/demo/hardware/navigation_6agents.gif" alt="6agents" style="width: 750px;" />
+
